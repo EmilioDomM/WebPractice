@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador Léxico</title>
+    <style>
+        .token { font-weight: bold; }
+        .error { font-weight: bold; }
+        .palabra-reservada { color: blue; }
+        .string { color: brown; }
+        .variable { color: orange; }
+        .real { color: purple; }
+        .entero { color: green; }
+        .comentario { color: gray; }
+        .asignacion { color: lightgreen; }
+        .suma, .resta, .potencia, .division, .multiplicacion { color: red; }
+        .coma, .parentesis, .corchete, .llave { color: black; }
+    </style>
+</head>
+<body>
+    <h1>Analizador Léxico</h1>
+    <form id="formCodigo">
+        <label for="codigo">Ingresa el código a analizar:</label><br>
+        <textarea id="codigo" name="codigo" rows="10" cols="50"></textarea><br>
+        <button type="submit" id="btnAnalizar">Analizar</button>
+    </form>
+
+    <div id="codigo-container">
+        <div id="resultados">
+            Aquí se mostrarán los resultados del análisis léxico 👍
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formCodigo').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Obtine el código del textarea
+            var codigo = document.getElementById('codigo').value;
+
+            // Envia el código al servidor para su análisis
+            fetch('/analizar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ codigo: codigo })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Muestra los resultados en la página
+                var resultadosDiv = document.getElementById('resultados');
+                resultadosDiv.innerHTML = ''; // Borra los anteriores
+
+                // Muestra los tokens de app.py
+                resultadosDiv.appendChild(document.createElement('hr'));
+                resultadosDiv.appendChild(document.createTextNode('Tokens:'));
+                var tokensList = document.createElement('ul');
+                data.tokens.forEach(function(token) {               // Esto es para los tokens
+                    var li = document.createElement('li');
+                    li.textContent = `${token[0]} - ${token[1]}`;
+                    li.classList.add('token', token[2]); 
+                    tokensList.appendChild(li);
+                });
+                resultadosDiv.appendChild(tokensList);
+
+                // errores
+                resultadosDiv.appendChild(document.createElement('hr'));
+                resultadosDiv.appendChild(document.createTextNode('Errores:'));
+                var erroresList = document.createElement('ul');
+                data.errores.forEach(function(error) {               // Esto es para los errores
+                    var li = document.createElement('li');
+                    li.textContent = error;
+                    li.classList.add('error');
+                    erroresList.appendChild(li);
+                });
+                resultadosDiv.appendChild(erroresList);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
